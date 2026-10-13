@@ -1,5 +1,7 @@
 # Procurement Dashboard
 
+**[▶ Live demo](https://procurement-dashboard-nine.vercel.app/)** — runs in the browser with fictional data, no sign-in needed.
+
 An internal-style web app for a central procurement department: read-mostly dashboards plus a few data-entry flows.
 Built as a portfolio project — all company names, people and figures in this repo are fictional placeholders.
 
@@ -10,6 +12,8 @@ Built as a portfolio project — all company names, people and figures in this r
 | ![Projects](docs/screenshots/projects.png) | ![Item Master](docs/screenshots/item-master.png) |
 
 ## Live demo
+
+Try it: **https://procurement-dashboard-nine.vercel.app/**
 
 The demo runs entirely in the browser: the Firebase SDK is swapped for an in-memory mock (`src/demo/`) seeded with generated, fictional data, and you are signed in automatically. Edits work but reset on reload.
 
