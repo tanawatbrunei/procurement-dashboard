@@ -1,0 +1,73 @@
+rules_version = '2';
+
+// Firestore security rules for the Procurement Dashboard app — CLOSED SYSTEM.
+//
+// Who gets in: a signed-in user whose email is VERIFIED and is on the allowlist
+// (`allowedUsers/{email}`, managed by admins on the "จัดการผู้ใช้" page).
+// Bootstrap admins (hardcoded below) are always allowed so the team can never
+// lock itself out. Everyone else — including anyone who merely signs up with a
+// @example.com address — is denied on every collection.
+//
+// HOW TO APPLY:
+//   Firebase Console → Firestore Database → Rules tab →
+//   paste this whole file → Publish.
+//   Rules do NOT deploy with the code. See docs/SECURITY.md for the safe order.
+//
+// Keep this file in sync with src/config/admins.ts and the collections used in src/.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- identity helpers ----
+    function verified() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    // Keep in sync with BOOTSTRAP_ADMIN_EMAILS in src/config/admins.ts.
+    function isBootstrapAdmin() {
+      return verified() && request.auth.token.email in ["admin@example.com"];
+    }
+    function allowlistDoc() {
+      return /databases/$(database)/documents/allowedUsers/$(request.auth.token.email);
+    }
+    // Any admitted member (read + write on app data).
+    function isMember() {
+      return isBootstrapAdmin() || (verified() && exists(allowlistDoc()));
+    }
+    // Admin = bootstrap admin, or an allowlist entry with role "admin".
+    function isAdmin() {
+      return isBootstrapAdmin() || (verified() && exists(allowlistDoc()) && get(allowlistDoc()).data.role == "admin");
+    }
+
+    // ---- who is allowed ----
+    match /allowedUsers/{email} {
+      // Everyone may read ONLY their own entry (so the app can tell "not on the list");
+      // only admins can list, add, change or remove entries.
+      allow get: if request.auth != null && request.auth.token.email == email || isAdmin();
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ---- app data ----
+    match /vendors/{docId} {
+      allow read, create, update: if isMember();
+      allow delete: if isAdmin();
+    }
+    match /items/{docId}           { allow read, write: if isMember(); }
+    match /poLines/{docId}         { allow read, write: if isMember(); }
+    match /meta/{docId}            { allow read, write: if isMember(); }
+    match /importHistory/{docId}   { allow read, write: if isMember(); }
+    match /settings/{docId}        { allow read, write: if isMember(); }
+    match /orgChart/{docId}        { allow read, write: if isMember(); }
+    match /staffDirectory/{docId}  { allow read, write: if isMember(); }
+    match /trackingTabs/{tabId} {
+      allow read, write: if isMember();
+      match /rows/{rowId}          { allow read, write: if isMember(); }
+    }
+    // Compact per-tab copy written by the Apps Script (bypasses rules); the web app only reads it.
+    match /trackingSlim/{docId}    { allow read: if isMember(); }
+    match /knowledgeDocs/{docId}   { allow read, write: if isMember(); }
+    match /esgDocs/{docId}         { allow read, write: if isMember(); }
+    match /esgTemplates/{docId}    { allow read, write: if isMember(); }
+    match /homeProjects/{docId}    { allow read, write: if isMember(); }
+    match /kickoffProjects/{docId} { allow read, write: if isMember(); }
+  }
+}

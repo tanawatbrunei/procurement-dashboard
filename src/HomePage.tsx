@@ -1,0 +1,690 @@
+import {
+  Reveal,
+  IconBadge,
+  Section,
+  HoverCard,
+  grid,
+  WorkflowTimeline,
+  tint,
+} from "./components/PageKit";
+import {
+  IconBuildingFactory2,
+  IconBolt,
+  IconFileInvoice,
+  IconShieldCheck,
+  IconClockHour4,
+  IconMapPin,
+  IconWorld,
+  IconUsersGroup,
+  IconArrowRight,
+  IconReceipt,
+  IconTruckDelivery,
+  IconClipboardList,
+  IconDatabase,
+  IconSitemap,
+  IconCategory2,
+  IconBuildingSkyscraper,
+  IconSun,
+  IconUserCog,
+  IconCalculator,
+  IconBuildingStore,
+  IconBuildingWarehouse,
+  IconFileCheck,
+  IconCoin,
+  IconBuildingBank,
+  IconFolders,
+  IconChartBar,
+} from "@tabler/icons-react";
+import type { Page } from "./Sidebar";
+
+/* ============================================================
+   Data
+   ============================================================ */
+
+const SERVED = [
+  { code: "HEC", name: "เฮลิออส เอ็นจิเนียริ่ง (มหาชน)", note: "บริษัทแม่ของเครือ" },
+  { code: "HUE", name: "Helios Utility & Energy", note: "ลงทุน & เดินเครื่องโรงไฟฟ้า" },
+  { code: "BU", name: "Business Unit ย่อย", note: "หน่วยธุรกิจอื่นในเครือ Helios" },
+];
+
+const MODELS = [
+  {
+    icon: IconBuildingFactory2,
+    color: "var(--primary)",
+    tag: "EPC",
+    title: "Engineering, Procurement & Construction",
+    desc: "Helios รับจ้างออกแบบ จัดซื้อ และติดตั้งระบบให้ลูกค้า เมื่อทีมขายปิดงานได้ ฝ่ายจัดซื้อจึงเริ่มทำงาน",
+    facts: ["ลูกค้าเป็นเจ้าของระบบ", "รับประกัน O&M ราว 2 ปี"],
+  },
+  {
+    icon: IconBolt,
+    color: "var(--accent)",
+    tag: "PPA",
+    title: "Power Purchase Agreement",
+    desc: "Helios ลงทุนสร้างโรงไฟฟ้าเอง แล้วขายไฟให้ลูกค้าตามราคาที่ตกลง (เช่น ซื้อมา 2 บาท ขาย 4 บาท/หน่วย)",
+    facts: ["Helios เป็นเจ้าของระบบ", "ดูแล O&M ตลอดอายุสัญญา"],
+  },
+];
+
+const PROJECT_TYPES = [
+  {
+    icon: IconBuildingSkyscraper,
+    color: "var(--info)",
+    title: "Rooftop (Groof)",
+    desc: "ติดตั้งบนหลังคา ขนาด 300 kW – 5 MW ราว 90% เป็นงาน EPC",
+    focus: "โฟกัสจัดซื้อ: แผงโซลาร์ · Inverter · หม้อแปลง",
+  },
+  {
+    icon: IconSun,
+    color: "var(--warning)",
+    title: "Solar Farm",
+    desc: "โครงการขนาดใหญ่ มี TOR แยกเฉพาะ แบ่ง 2 ระดับ: Pre Rim (ประมูล) และ Falcon (ดำเนินงานจริง)",
+    focus: "ขอบเขตกว้าง ใช้พื้นที่หลายร้อยไร่",
+  },
+];
+
+const STAKEHOLDERS = [
+  { icon: IconClipboardList, color: "var(--primary)", role: "Project Manager", desc: "ส่ง PR / RFQ ให้เรา และอนุมัติเอกสาร Good Receive" },
+  { icon: IconUserCog, color: "var(--info)", role: "Engineer", desc: "กำหนด Spec อุปกรณ์ ทำ TOR และคุยเทคนิคกับ Supplier" },
+  { icon: IconCalculator, color: "var(--accent)", role: "Tender", desc: "ถอดแบบหน้างาน ประเมิน Cost และให้ตัวเลขงบประมาณ" },
+  { icon: IconBuildingStore, color: "var(--warning)", role: "Vendor / Supplier", desc: "ผู้ขายสินค้า–บริการ เข้าร่วมกระบวนการประมูล RFQ" },
+  { icon: IconFileCheck, color: "var(--success)", role: "Admin", desc: "ตรวจสอบความถูกต้องของเอกสารและใบส่งของ" },
+  { icon: IconCoin, color: "var(--primary)", role: "Finance / Account", desc: "จ่ายเงินให้ Supplier หลัง Good Receive เรียบร้อย" },
+  { icon: IconBuildingWarehouse, color: "var(--info)", role: "Warehouse", desc: "รับของเข้า เก็บสต๊อกไว้ให้ และจ่ายของออกเมื่อมีการเบิกใช้งาน" },
+];
+
+const WORKFLOW = [
+  { icon: IconBuildingStore, title: "Vendor Master", detail: "ค้นหาก่อนเสมอว่ามี Vendor ในระบบหรือยัง ถ้ายังไม่มีจึงสร้างใหม่ใน D365 (ภายใต้ HEC) พร้อม verify ทุนจดทะเบียน, cash flow, ผลงาน" },
+  { icon: IconFileInvoice, title: "รับ PR / RFQ", detail: "รับคำขอจาก PM หรือ Engineer แล้วดาวน์โหลดไฟล์ Budget, Quotation, PR จาก E-doc" },
+  { icon: IconUsersGroup, title: "เชิญประมูล & เปรียบเทียบ", detail: "เชิญ Supplier อธิบาย TOR กำหนดวันยื่นซอง คัดเหลือ 3 ราย แล้วทำไฟล์ Compare ราคา/คุณสมบัติ" },
+  { icon: IconShieldCheck, title: "Price Approval (PA)", detail: "เปิด PA ใน D365 ส่งเข้า Alfresco เพื่ออนุมัติตามวงเงิน (Manager / VP / CEO) เร่งด่วนใช้ Fast Track ได้" },
+  { icon: IconReceipt, title: "Purchase Order (PO)", detail: "หลัง PA ผ่าน เปิด PO ใน D365 ตรวจ Company / PR / PA / Project ให้ตรงกัน แล้ว Confirm เพื่อให้มีผลทางกฎหมาย" },
+  { icon: IconTruckDelivery, title: "Good Receipt (GR)", detail: "ใช้ Invoice + Delivery Order ตรวจเทียบ PO แล้ว Receive ใน D365 หากของไม่ครบให้แก้ Quantity ตามจริง" },
+  { icon: IconBuildingWarehouse, title: "Warehouse", detail: "Warehouse รับของเข้าเก็บไว้ที่คลัง เมื่อหน้างานต้องใช้อุปกรณ์ก็ทำเรื่องเบิกของออกจากคลังตามจริง" },
+];
+
+const PA_TIERS = [
+  { level: "Manager", limit: "น้อยกว่า 100,000 บาท", color: "var(--success)" },
+  { level: "VP", limit: "100,000 – 499,999 บาท", color: "var(--warning)" },
+  { level: "CEO", limit: "ตั้งแต่ 500,000 บาทขึ้นไป", color: "var(--danger)" },
+];
+
+const SYSTEMS = [
+  { icon: IconDatabase, name: "Dynamics 365", purpose: "ระบบหลักทั้งหมด: Vendor, PR, PA, PO, Good Receipt", primary: true },
+  { icon: IconFolders, name: "E-doc", purpose: "รับ–ส่งเอกสาร PR, Budget, Quotation" },
+  { icon: IconFileCheck, name: "Alfresco", purpose: "เก็บและอนุมัติเอกสาร Price Approval" },
+  { icon: IconChartBar, name: "Excel", purpose: "ติดตามสถานะงานของแต่ละคน" },
+];
+
+const PRODUCTS = [
+  "แผงโซลาร์",
+  "Inverter & Optimizer",
+  "สายไฟ",
+  "หม้อแปลง",
+  "โครงสร้างรับแผง (Racking)",
+  "อุปกรณ์ไฟฟ้า",
+  "อุปกรณ์ต่อสาย",
+];
+
+const SERVICES = [
+  "งาน Subcontract",
+  "งาน O&M",
+  "บริหารโครงการ",
+  "ค่าแรง",
+  "ค่าเช่า",
+  "ค่าธรรมเนียม & สาธารณูปโภค",
+  "ยานพาหนะ",
+  "สวัสดิการ",
+];
+
+const LEAD_TIMES = [
+  { scale: "โครงการ < 1 MW", time: "≈ 2–3 เดือน" },
+  { scale: "โครงการ > 1 MW", time: "≈ 4–6 เดือน" },
+  { scale: "ทั้งโปรเจกต์ (รวมใบอนุญาต)", time: "≈ 2 ปี" },
+];
+
+/* Group companies whose PR/PA/PO we handle — full registered Thai + English
+   legal names (incl. บริษัท…จำกัด (สำนักงานใหญ่)) and tax ID, kept verbatim so
+   the team can copy a name straight into a PO. */
+const COMPANIES = [
+  { code: "HSP1", nameTh: "บริษัท เฮลิออส โซลาร์ พาวเวอร์ 1 จำกัด (สำนักงานใหญ่)", nameEn: "Helios Solar Power 1 Co., Ltd.", taxId: "0100000000001" },
+  { code: "HUE", nameTh: "บริษัท เฮลิออส ยูทิลิตี้ แอนด์ เอ็นเนอร์ยี่ จำกัด (สำนักงานใหญ่)", nameEn: "Helios Utility And Energy Co., Ltd.", taxId: "0100000000002" },
+  { code: "HEC", nameTh: "บริษัท เฮลิออส เอ็นจิเนียริ่ง จำกัด (มหาชน) (สำนักงานใหญ่)", nameEn: "Helios Engineering Public Company Limited", taxId: "0100000000003" },
+  { code: "HSC", nameTh: "บริษัท เฮลิออส โซลาร์ คอมมูนิตี้ จำกัด (สำนักงานใหญ่)", nameEn: "Helios Solar Community Co., Ltd.", taxId: "0100000000004" },
+];
+
+/* ============================================================
+   Page
+   ============================================================ */
+
+export default function HomePage({ setPage }: { setPage: (p: Page) => void }) {
+  return (
+    <div>
+      {/* ---------- Hero ---------- */}
+      <header
+        style={{
+          position: "relative",
+          background:
+            "linear-gradient(135deg, var(--navy-deep) 0%, var(--navy-mid) 100%)",
+          color: "#fffdf8",
+          padding: "var(--sp-8) var(--sp-6)",
+          overflow: "hidden",
+        }}
+      >
+        <div className="hero-aurora" aria-hidden />
+        <div style={{ position: "relative", maxWidth: "1100px", margin: "0 auto", zIndex: 1 }}>
+          <Reveal>
+            <img
+              src="/logo-default.svg"
+              alt="Helios"
+              style={{
+                height: 36,
+                width: "auto",
+                display: "block",
+                marginBottom: "var(--sp-5)",
+                filter: "brightness(0) invert(1)",
+              }}
+            />
+          </Reveal>
+          <Reveal>
+            <p
+              style={{
+                fontSize: "var(--fs-h3)",
+                fontWeight: 400,
+                opacity: 0.92,
+                maxWidth: "none",
+                lineHeight: 1.5,
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              ทำความเข้าใจบทบาท ธุรกิจ และกระบวนการทำงานของฝ่ายจัดซื้อส่วนกลาง
+              ตั้งแต่รับคำขอจนถึงสั่งซื้อและรับของ
+            </p>
+          </Reveal>
+
+          {/* CTA */}
+          <Reveal delay={120} style={{ marginTop: "var(--sp-5)" }}>
+            <button
+              type="button"
+              onClick={() => setPage("knowledge")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "var(--sp-2)",
+                background: "#fffdf8",
+                color: "var(--navy-deep)",
+                border: "none",
+                borderRadius: "var(--radius-full)",
+                padding: "var(--sp-3) var(--sp-5)",
+                fontWeight: 700,
+                fontSize: "var(--fs-sm)",
+                cursor: "pointer",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              อ่านคู่มือการทำงาน
+              <IconArrowRight size={18} stroke={2} />
+            </button>
+          </Reveal>
+        </div>
+      </header>
+
+      {/* ---------- Body ---------- */}
+      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "var(--sp-7) var(--sp-5)" }}>
+        {/* 1. Who we serve */}
+        <Section
+          eyebrow="เราคือใคร"
+          title="ฝ่ายจัดซื้อส่วนกลางของทั้งเครือ"
+          intro="ฝ่ายจัดซื้อไม่ได้ทำงานให้บริษัทเดียว แต่ให้บริการทุกหน่วยงานในเครือ Helios ทุกทีมที่ต้องการซื้ออุปกรณ์ ผู้รับเหมา หรือบริการ จะต้องผ่านฝ่ายจัดซื้อเสมอ"
+        >
+          <div style={grid(240)}>
+            {SERVED.map((s) => (
+              <HoverCard key={s.code}>
+                <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)" }}>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minWidth: 56,
+                      height: 40,
+                      padding: "0 var(--sp-2)",
+                      borderRadius: "var(--radius-sm)",
+                      background: tint("var(--primary)"),
+                      color: "var(--primary)",
+                      fontWeight: 800,
+                      fontFamily: "var(--font-sans)",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    {s.code}
+                  </span>
+                  <div>
+                    <div style={{ fontWeight: 600, color: "var(--text-strong)" }}>{s.name}</div>
+                    <div style={{ fontSize: "var(--fs-sm)", color: "var(--text-muted)" }}>{s.note}</div>
+                  </div>
+                </div>
+              </HoverCard>
+            ))}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--sp-3)",
+              marginTop: "var(--sp-4)",
+              padding: "var(--sp-4)",
+              borderRadius: "var(--radius-lg)",
+              background: tint("var(--accent)"),
+              border: "1px solid var(--border)",
+            }}
+          >
+            <IconSitemap size={22} stroke={1.75} style={{ color: "var(--accent)", flexShrink: 0 }} />
+            <span style={{ fontWeight: 600, color: "var(--text-strong)" }}>
+              ทุกการจัดซื้อในเครือต้องผ่านฝ่ายจัดซื้อเสมอ
+            </span>
+          </div>
+        </Section>
+
+        {/* 2. Business model */}
+        <Section
+          eyebrow="บริบทธุรกิจ"
+          title="Helios ทำธุรกิจพลังงานแสงอาทิตย์อย่างไร"
+          intro="ต้องเข้าใจธุรกิจก่อน เพราะมันกำหนดว่าเราซื้ออะไรและซื้อในบริบทไหน — แบ่งเป็น 2 โมเดลหลัก"
+        >
+          <div
+            style={{
+              position: "relative",
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 0,
+              borderRadius: "var(--radius-lg)",
+              overflow: "hidden",
+              border: "1px solid var(--border)",
+              boxShadow: "var(--shadow-sm)",
+              minHeight: 220,
+            }}
+          >
+            {MODELS.map((m) => (
+              <div
+                key={m.tag}
+                style={{
+                  background:
+                    m.tag === "EPC"
+                      ? "color-mix(in srgb, var(--primary) 10%, var(--surface))"
+                      : "color-mix(in srgb, var(--accent) 12%, var(--surface))",
+                  padding:
+                    m.tag === "EPC"
+                      ? "var(--sp-6) 5.5rem var(--sp-6) var(--sp-4)"
+                      : "var(--sp-6) var(--sp-4) var(--sp-6) 5.5rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: m.tag === "EPC" ? "flex-end" : "flex-start",
+                  textAlign: m.tag === "EPC" ? "right" : "left",
+                }}
+              >
+                <IconBadge icon={m.icon} color={m.color} size={48} />
+                <div
+                  style={{
+                    fontFamily: "var(--font-serif)",
+                    fontSize: "2.4rem",
+                    fontWeight: 800,
+                    color: m.color,
+                    marginTop: "var(--sp-3)",
+                    lineHeight: 1,
+                  }}
+                >
+                  {m.tag}
+                </div>
+                <div style={{ fontWeight: 600, color: "var(--text-strong)", marginTop: "var(--sp-1)" }}>
+                  {m.title}
+                </div>
+                <p
+                  style={{
+                    color: "var(--text-muted)",
+                    fontSize: "var(--fs-sm)",
+                    lineHeight: 1.6,
+                    margin: "var(--sp-3) 0",
+                    maxWidth: "32ch",
+                  }}
+                >
+                  {m.desc}
+                </p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--sp-2)", justifyContent: m.tag === "EPC" ? "flex-end" : "flex-start" }}>
+                  {m.facts.map((f) => (
+                    <span
+                      key={f}
+                      style={{
+                        fontSize: "var(--fs-xs)",
+                        color: "var(--text)",
+                        background: "var(--surface-2)",
+                        border: "1px solid var(--border)",
+                        borderRadius: "var(--radius-full)",
+                        padding: "4px 12px",
+                      }}
+                    >
+                      {f}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <span
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: 52,
+                height: 52,
+                borderRadius: "50%",
+                background: "var(--bg-elevated)",
+                border: "2px solid var(--border-strong)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontFamily: "var(--font-serif)",
+                fontWeight: 800,
+                fontSize: "var(--fs-xs)",
+                color: "var(--text-faint)",
+                zIndex: 2,
+              }}
+            >
+              VS
+            </span>
+          </div>
+
+          <h3 style={{ margin: "var(--sp-6) 0 var(--sp-4)", color: "var(--text-strong)" }}>
+            งานแบ่งเป็น 2 ประเภท
+          </h3>
+          <div style={grid(300)}>
+            {PROJECT_TYPES.map((p) => (
+              <HoverCard key={p.title}>
+                <div style={{ display: "flex", gap: "var(--sp-3)" }}>
+                  <IconBadge icon={p.icon} color={p.color} />
+                  <div>
+                    <div style={{ fontWeight: 600, color: "var(--text-strong)" }}>{p.title}</div>
+                    <p style={{ color: "var(--text-muted)", fontSize: "var(--fs-sm)", lineHeight: 1.6, margin: "var(--sp-1) 0 var(--sp-2)" }}>
+                      {p.desc}
+                    </p>
+                    <div style={{ fontSize: "var(--fs-xs)", fontWeight: 600, color: p.color }}>{p.focus}</div>
+                  </div>
+                </div>
+              </HoverCard>
+            ))}
+          </div>
+        </Section>
+
+        {/* 4. Stakeholders */}
+        <Section
+          eyebrow="คนที่เราทำงานด้วย"
+          title="Stakeholders ในกระบวนการจัดซื้อ"
+        >
+          <div style={grid(260)}>
+            {STAKEHOLDERS.map((s) => (
+              <HoverCard key={s.role}>
+                <div style={{ display: "flex", gap: "var(--sp-3)" }}>
+                  <IconBadge icon={s.icon} color={s.color} size={40} />
+                  <div>
+                    <div style={{ fontWeight: 600, color: "var(--text-strong)" }}>{s.role}</div>
+                    <div style={{ fontSize: "var(--fs-sm)", color: "var(--text-muted)", lineHeight: 1.55, marginTop: "2px" }}>
+                      {s.desc}
+                    </div>
+                  </div>
+                </div>
+              </HoverCard>
+            ))}
+          </div>
+        </Section>
+
+        {/* 5. Workflow */}
+        <Section
+          eyebrow="หัวใจของงาน"
+          title="กระบวนการจัดซื้อ ตั้งแต่ต้นจนจบ"
+          intro="ฝ่ายจัดซื้อทำหน้าที่แปลงความต้องการจากหน้างาน ให้กลายเป็นสัญญาและคำสั่งซื้อ ผ่าน 7 ขั้นตอนหลัก"
+        >
+          <WorkflowTimeline steps={WORKFLOW} />
+        </Section>
+
+        {/* 6. Price Approval tiers */}
+        <Section
+          eyebrow="ระดับการอนุมัติ"
+          title="วงเงินอนุมัติราคา (Price Approval)"
+          intro="ก่อนเปิด PO ทุกครั้งต้องผ่าน PA ก่อน — ระดับผู้อนุมัติขึ้นกับมูลค่า (รายละเอียดขั้นตอนเต็มดูได้ที่ Knowledge Base)"
+        >
+          <div style={grid(240)}>
+            {PA_TIERS.map((t, i) => (
+              <HoverCard key={t.level} style={{ borderTop: `3px solid ${t.color}` }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: "var(--fs-xs)", color: "var(--text-faint)", fontWeight: 700 }}>
+                    ระดับ {i + 1}
+                  </span>
+                  <IconShieldCheck size={20} stroke={1.75} style={{ color: t.color }} />
+                </div>
+                <div style={{ fontFamily: "var(--font-serif)", fontSize: "var(--fs-h2)", fontWeight: 700, color: "var(--text-strong)", margin: "var(--sp-2) 0 var(--sp-1)" }}>
+                  {t.level}
+                </div>
+                <div style={{ fontSize: "var(--fs-sm)", color: "var(--text-muted)" }}>{t.limit}</div>
+              </HoverCard>
+            ))}
+          </div>
+        </Section>
+
+        {/* 7. Systems */}
+        <Section
+          eyebrow="เครื่องมือ"
+          title="ระบบที่ฝ่ายจัดซื้อใช้ทำงาน"
+        >
+          <div style={grid(240)}>
+            {SYSTEMS.map((s) => (
+              <HoverCard
+                key={s.name}
+                style={s.primary ? { borderColor: "var(--primary)" } : undefined}
+              >
+                <IconBadge icon={s.icon} color={s.primary ? "var(--primary)" : "var(--text-muted)"} size={40} />
+                <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", marginTop: "var(--sp-3)" }}>
+                  <span style={{ fontWeight: 600, color: "var(--text-strong)" }}>{s.name}</span>
+                  {s.primary && (
+                    <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.06em", color: "var(--primary)", background: tint("var(--primary)"), padding: "2px 8px", borderRadius: "var(--radius-full)" }}>
+                      ระบบหลัก
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: "var(--fs-sm)", color: "var(--text-muted)", marginTop: "var(--sp-1)", lineHeight: 1.55 }}>
+                  {s.purpose}
+                </div>
+              </HoverCard>
+            ))}
+          </div>
+        </Section>
+
+        {/* 8. Categories */}
+        <Section
+          eyebrow="ขอบเขตการจัดซื้อ"
+          title="ประเภทสินค้าและบริการ"
+          intro="สินค้าและบริการที่ฝ่ายจัดซื้อรับผิดชอบ แบ่งเป็น 31 หมวดหลัก ตัวอย่างเช่น"
+        >
+          <HoverCard interactive={false}>
+            {[
+              { icon: IconCategory2, color: "var(--primary)", label: "สินค้า (Products)", items: PRODUCTS },
+              { icon: IconUserCog, color: "var(--accent)", label: "บริการ (Services)", items: SERVICES },
+            ].map((g, i) => {
+              const pct = Math.round((g.items.length / (PRODUCTS.length + SERVICES.length)) * 100);
+              return (
+                <div key={g.label} style={{ marginBottom: i === 0 ? "var(--sp-5)" : 0 }}>
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "var(--sp-2)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)" }}>
+                      <g.icon size={18} stroke={1.75} style={{ color: g.color }} />
+                      <span style={{ fontWeight: 700, color: "var(--text-strong)" }}>{g.label}</span>
+                    </div>
+                    <span style={{ fontFamily: "var(--font-serif)", fontWeight: 800, fontSize: "var(--fs-h3)", color: g.color }}>
+                      {pct}%
+                    </span>
+                  </div>
+                  <div style={{ background: "var(--surface-2)", borderRadius: "var(--radius-full)", height: 10, overflow: "hidden" }}>
+                    <div style={{ width: `${pct}%`, height: "100%", background: g.color, borderRadius: "var(--radius-full)" }} />
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--sp-2)", marginTop: "var(--sp-3)" }}>
+                    {g.items.map((it) => (
+                      <span
+                        key={it}
+                        style={{
+                          fontSize: "var(--fs-xs)",
+                          color: "var(--text-muted)",
+                          background: "var(--surface-2)",
+                          border: "1px solid var(--border)",
+                          borderRadius: "var(--radius-full)",
+                          padding: "4px 12px",
+                        }}
+                      >
+                        {it}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </HoverCard>
+        </Section>
+
+        {/* 9. Timeline & risk */}
+        <Section
+          eyebrow="ไทม์ไลน์"
+          title="ระยะเวลาโดยรวม"
+          intro="Bottleneck สำคัญที่สุดคือใบอนุญาต อ.1 (รายละเอียดดูที่ Knowledge Base)"
+        >
+          <div style={grid(220)}>
+            {LEAD_TIMES.map((l) => (
+              <HoverCard key={l.scale} style={{ padding: "var(--sp-4)" }}>
+                <IconClockHour4 size={22} stroke={1.75} style={{ color: "var(--info)" }} />
+                <div style={{ fontFamily: "var(--font-serif)", fontSize: "var(--fs-h3)", fontWeight: 700, color: "var(--text-strong)", marginTop: "var(--sp-2)" }}>
+                  {l.time}
+                </div>
+                <div style={{ fontSize: "var(--fs-sm)", color: "var(--text-muted)", marginTop: "2px" }}>{l.scale}</div>
+              </HoverCard>
+            ))}
+          </div>
+        </Section>
+
+        {/* 10. Office + companies + website */}
+        <Section eyebrow="ติดต่อ" title="ที่ตั้งและช่องทางบริษัท">
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-4)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "var(--sp-4)" }}>
+              <HoverCard interactive={false}>
+                <div style={{ display: "flex", gap: "var(--sp-3)" }}>
+                  <IconBadge icon={IconMapPin} color="var(--primary)" />
+                  <div>
+                    <div style={{ fontWeight: 600, color: "var(--text-strong)", marginBottom: "var(--sp-1)" }}>
+                      ที่ตั้งฝ่ายจัดซื้อ
+                    </div>
+                    <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "var(--fs-sm)", lineHeight: 1.7 }}>
+                      548 อาคาร วัน ซิตี้ เซ็นเตอร์ (โอซีซี)<br />
+                      ชั้นที่ 44 ถนนเพลินจิต<br />
+                      แขวงลุมพินี เขตปทุมวัน<br />
+                      กรุงเทพมหานคร 10330
+                    </p>
+                    <hr style={{ margin: "var(--sp-2) 0", border: "none", borderTop: "1px dashed var(--border-strong)" }} />
+                    <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "var(--fs-sm)", lineHeight: 1.7, fontFamily: '"IBM Plex Sans", system-ui, "Segoe UI", Roboto, sans-serif' }}>
+                      548 One City Centre Building (OCC), 44th Floor<br />
+                      Phloen Chit Road, Lumphini, Pathum Wan<br />
+                      Bangkok 10330
+                    </p>
+                    <a
+                      href="https://maps.app.goo.gl/aGzA72G58n75Wx649"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        marginTop: "var(--sp-2)",
+                        color: "var(--primary)",
+                        fontSize: "var(--fs-sm)",
+                        fontWeight: 600,
+                        textDecoration: "none",
+                      }}
+                    >
+                      <IconMapPin size={16} stroke={1.75} />
+                      เปิดใน Google Maps
+                    </a>
+                  </div>
+                </div>
+              </HoverCard>
+
+              <HoverCard interactive={false}>
+                <div style={{ display: "flex", gap: "var(--sp-3)", alignItems: "center", flexWrap: "wrap", height: "100%" }}>
+                  <IconBadge icon={IconBuildingBank} color="var(--accent)" />
+                  <div style={{ flex: 1, minWidth: 200 }}>
+                    <div style={{ fontWeight: 600, color: "var(--text-strong)", marginBottom: "var(--sp-1)" }}>
+                      Website บริษัท
+                    </div>
+                    <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "var(--fs-sm)", lineHeight: 1.6 }}>
+                      เว็บไซต์หลักของกลุ่มบริษัท เฮลิออส เอ็นจิเนียริ่ง
+                    </p>
+                  </div>
+                  <a
+                    href="https://www.example.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "var(--sp-2)",
+                      background: "var(--primary)",
+                      color: "var(--primary-contrast)",
+                      textDecoration: "none",
+                      padding: "var(--sp-3) var(--sp-5)",
+                      borderRadius: "var(--radius)",
+                      fontWeight: 600,
+                      fontSize: "var(--fs-sm)",
+                    }}
+                  >
+                    <IconWorld size={18} stroke={1.75} />
+                    www.example.com
+                  </a>
+                </div>
+              </HoverCard>
+            </div>
+
+            <HoverCard interactive={false}>
+              <div style={{ display: "flex", gap: "var(--sp-3)" }}>
+                <IconBadge icon={IconBuildingSkyscraper} color="var(--info)" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, color: "var(--text-strong)", marginBottom: "var(--sp-1)" }}>
+                    บริษัทในเครือที่ดูแล
+                  </div>
+                  <p style={{ margin: "0 0 var(--sp-3)", color: "var(--text-faint)", fontSize: "var(--fs-xs)" }}>
+                    ชื่อเต็มตามทะเบียน — คัดลอกไปใช้ใน PO ได้ทันที
+                  </p>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--fs-xs)" }}>
+                      <thead>
+                        <tr style={{ textAlign: "left", color: "var(--text-muted)" }}>
+                          <th style={{ padding: "6px 10px", fontWeight: 700, whiteSpace: "nowrap" }}>ชื่อย่อ</th>
+                          <th style={{ padding: "6px 10px", fontWeight: 700 }}>บริษัท</th>
+                          <th style={{ padding: "6px 10px", fontWeight: 700 }}>Company</th>
+                          <th style={{ padding: "6px 10px", fontWeight: 700, whiteSpace: "nowrap" }}>เลขผู้เสียภาษี / TAX ID</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {COMPANIES.map((c) => (
+                          <tr key={c.code} style={{ borderTop: "1px solid var(--border)" }}>
+                            <td style={{ padding: "10px", fontWeight: 700, color: "var(--text-strong)", verticalAlign: "top", whiteSpace: "nowrap" }}>{c.code}</td>
+                            <td style={{ padding: "10px", color: "var(--text)", verticalAlign: "top", lineHeight: 1.5 }}>{c.nameTh}</td>
+                            <td style={{ padding: "10px", color: "var(--text-muted)", verticalAlign: "top", lineHeight: 1.5, fontFamily: '"IBM Plex Sans", system-ui, "Segoe UI", Roboto, sans-serif' }}>{c.nameEn}</td>
+                            <td style={{ padding: "10px", color: "var(--text-muted)", verticalAlign: "top", whiteSpace: "nowrap", fontFamily: '"IBM Plex Sans", system-ui, "Segoe UI", Roboto, sans-serif' }}>{c.taxId}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </HoverCard>
+          </div>
+        </Section>
+
+      </div>
+    </div>
+  );
+}
