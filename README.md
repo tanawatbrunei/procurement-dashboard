@@ -2,7 +2,7 @@
 
 **[▶ Live demo](https://procurement-dashboard-nine.vercel.app/)** — runs in the browser with fictional data, no sign-in needed.
 
-An internal-style web app for a central procurement department: read-mostly dashboards plus a few data-entry flows.
+An internal-style web app for a central procurement department. It turns Google Sheet and Excel data into dashboards that show where the purchasing process is stuck.
 Built as a portfolio project — all company names, people and figures in this repo are fictional placeholders.
 
 ![Dashboard](docs/screenshots/tracking-summary.png)
@@ -26,18 +26,17 @@ Deploy: import the repo in Vercel (`vercel.json` is included), or publish to Git
 
 ## Features
 
-- **PR / PA / PO tracking** — stage KPIs, aging, SLA bottleneck detection, drill-down, slide-over detail drawer, Excel export
-- **Executive dashboard** — KPI cards, stage-duration analysis, top overdue, monthly trend, alerts, data-integrity checks
-- **Item Master** — cross-vendor price comparison, price variance, price-trend chart, Excel import (header-name mapping)
-- **Project register** — KPI cards, grouped project table with expand/collapse, charts, portfolio cards with progress
-- **Vendor directory, Knowledge base, ESG, Org chart**
-- **Cost-aware data layer** — 12-hour batch sync into an IndexedDB cache and a rate-limited "Sync now" to stay inside Firestore's free quota
-- **Closed-system access control** — email allowlist enforced by Firestore Security Rules (`firestore.rules`)
-- **Google Sheets → Firestore sync** via Apps Script (`google-apps-script/`)
+- **PR/PA/PO tracking** — splits each request into three stages with SLA targets, flags the bottleneck stage, ranks overdue items, drills down to the underlying rows, and exports to Excel.
+- **Executive dashboard** — KPI cards, stage-duration analysis, top overdue, monthly trend, alerts and data-integrity checks.
+- **Item Master** — compares the price of the same item across vendors, shows price variance and trend charts, and imports Excel files by matching column headers (column order doesn't matter).
+- **Project register** — executive KPI cards, a table grouped by project with expand/collapse, distribution charts, and portfolio cards with progress bars.
+- **Cost control** — reads Firestore in 12-hour batches into an IndexedDB cache, and limits "Sync now" to once per 15 minutes to stay within the free quota.
+- **Access control** — a closed system with an email allowlist enforced by Firestore Security Rules (`firestore.rules`).
+- **Google Sheets → Firestore sync** via Apps Script (`google-apps-script/`), plus a vendor directory, knowledge base, ESG and org-chart pages.
 
 ## Tech stack
 
-React 19 · TypeScript · Vite · Firebase (Auth, Firestore) · Recharts · SheetJS (xlsx) · Tabler Icons — plain CSS tokens, no CSS framework.
+React 19 · TypeScript · Vite · Firebase (Auth, Firestore) · Recharts · SheetJS (xlsx) · Google Apps Script · Tabler Icons — plain CSS tokens, no CSS framework.
 
 ## Getting started with a real backend
 
