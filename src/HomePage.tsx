@@ -175,7 +175,7 @@ export default function HomePage({ setPage }: { setPage: (p: Page) => void }) {
         <div style={{ position: "relative", maxWidth: "1100px", margin: "0 auto", zIndex: 1 }}>
           <Reveal>
             <img
-              src="/logo-default.svg"
+              src={`${import.meta.env.BASE_URL}logo-default.svg`}
               alt="Helios"
               style={{
                 height: 36,

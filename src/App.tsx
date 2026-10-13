@@ -160,6 +160,15 @@ export default function App() {
           © {new Date().getFullYear()} Helios Engineering Public Company Limited. All rights reserved.
         </footer>
       </main>
+      {import.meta.env.VITE_DEMO && (
+        <div style={{
+          position: "fixed", right: 16, bottom: 16, zIndex: 900, padding: "6px 14px", borderRadius: 999,
+          background: "var(--surface)", border: "1px solid var(--border-strong)", color: "var(--text-muted)",
+          fontSize: "var(--fs-xs)", boxShadow: "var(--shadow-lg)", pointerEvents: "none",
+        }}>
+          Demo · fictional data · changes aren’t saved
+        </div>
+      )}
     </div>
     </AccessProvider>
   );

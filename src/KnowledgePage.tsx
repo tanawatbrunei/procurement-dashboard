@@ -718,7 +718,7 @@ export default function KnowledgePage() {
         >
           <HoverCard interactive={false}>
             <div style={{ borderRadius: "var(--radius)", overflow: "hidden", marginBottom: "var(--sp-5)", border: "1px solid var(--border)" }}>
-              <img src="/incoterms-2020.png" alt="Incoterms 2020 — Point of Delivery and Transfer of Risk" style={{ width: "100%", display: "block" }} />
+              <img src={`${import.meta.env.BASE_URL}incoterms-2020.png`} alt="Incoterms 2020 — Point of Delivery and Transfer of Risk" style={{ width: "100%", display: "block" }} />
             </div>
 
             <div style={{ display: "flex", gap: "var(--sp-4)", marginBottom: "var(--sp-5)", flexWrap: "wrap" }}>

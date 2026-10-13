@@ -139,7 +139,7 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundImage: "url('/bg-financial.webp')",
+        backgroundImage: `url('${import.meta.env.BASE_URL}bg-financial.webp')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -203,7 +203,7 @@ export default function LoginPage({ onLogin }: { onLogin: () => void }) {
           }}
         >
           <img
-            src="/logo-default.svg"
+            src={`${import.meta.env.BASE_URL}logo-default.svg`}
             alt="Helios Logo"
             style={{
               height: "clamp(56px, 10vw, 96px)",

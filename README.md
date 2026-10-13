@@ -3,6 +3,23 @@
 An internal-style web app for a central procurement department: read-mostly dashboards plus a few data-entry flows.
 Built as a portfolio project — all company names, people and figures in this repo are fictional placeholders.
 
+![Dashboard](docs/screenshots/tracking-summary.png)
+
+| Projects | Item Master |
+|---|---|
+| ![Projects](docs/screenshots/projects.png) | ![Item Master](docs/screenshots/item-master.png) |
+
+## Live demo
+
+The demo runs entirely in the browser: the Firebase SDK is swapped for an in-memory mock (`src/demo/`) seeded with generated, fictional data, and you are signed in automatically. Edits work but reset on reload.
+
+```bash
+npm run dev:demo      # local demo, no Firebase needed
+npm run build:demo    # static build → dist/
+```
+
+Deploy: import the repo in Vercel (`vercel.json` is included), or publish to GitHub Pages by copying `docs/github-pages-workflow.yml` to `.github/workflows/deploy-demo.yml` and setting Settings → Pages → Source: GitHub Actions.
+
 ## Features
 
 - **PR / PA / PO tracking** — stage KPIs, aging, SLA bottleneck detection, drill-down, slide-over detail drawer, Excel export
@@ -18,7 +35,7 @@ Built as a portfolio project — all company names, people and figures in this r
 
 React 19 · TypeScript · Vite · Firebase (Auth, Firestore) · Recharts · SheetJS (xlsx) · Tabler Icons — plain CSS tokens, no CSS framework.
 
-## Getting started
+## Getting started with a real backend
 
 ```bash
 npm install

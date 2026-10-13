@@ -118,7 +118,7 @@ export default function Sidebar({
         }}
       >
         <img
-          src={collapsed ? "/favicon.svg" : "/logo-default.svg"}
+          src={`${import.meta.env.BASE_URL}${collapsed ? "favicon.svg" : "logo-default.svg"}`}
           alt="Helios"
           style={{
             height: 22,
